@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "main": "server.ts",
   "scripts": {
-      "dev": "node server.ts",
+      "dev": "node server.ts"
   },
   "dependencies": {
     "express": "^5.3.0"
