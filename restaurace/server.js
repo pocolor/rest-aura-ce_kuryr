@@ -6,5 +6,8 @@ fetch('http://localhost:3000/order', {
     callbackUrl: 'http://localhost:3001/update'
   })
 })
-  .then(res => res.status)
-  .then(status => console.log('Courier response:', status));
+    .then(res => {
+      console.log(res.status);
+      return res.json();
+    })
+   .then(status => console.log('Courier response:', status))
