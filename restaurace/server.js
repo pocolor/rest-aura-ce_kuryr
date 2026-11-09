@@ -19,14 +19,31 @@ app.get('/orders', (req, res) => {
 
 app.post('/send-order', async (req, res) => {
   const id = 'objednavka' + (++counter);
-  const response = await fetch('http://localhost:3000/order', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id,
-      callbackUrl: 'http://localhost:3001/update'
-    })
-  });
+  try {
+    const response = await fetch('http://localhost:3000/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id,
+        callbackUrl: 'http://localhost:3001/update'
+      })
+    });
+    const data = await response.json();
+    console.log('Courier response:', response.status, data);
+
+    if (response.status === 202 && data.status === 'Objednavka prijata') {
+      orders[data.id] = 'Žádost o objednávku';
+    }
+    res.sendStatus(response.status);
+  } catch (err) {
+    console.error('Courier error:', err.message);
+    res.sendStatus(502);
+  }
+});
+
+app.listen(3001, () => {
+  console.log('Restaurant runs on http://localhost:3001');
+});
   console.log('Courier response:', response.status, await response.text());
   res.sendStatus(response.status);
 });
