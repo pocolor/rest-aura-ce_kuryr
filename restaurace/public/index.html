@@ -6,6 +6,8 @@
 </head>
 <body>
   <h1>Objednávky</h1>
+  <button id="send">Odeslat objednávku</button>
+  <ul id="orders"></ul>
   <ul id="orders"></ul>
 
   <script>
@@ -23,6 +25,10 @@
 
     load();
     setInterval(load, 1000);
+
+    document.getElementById('send').onclick = () => {
+    fetch('/send-order', { method: 'POST' });
+  };
   </script>
 </body>
 </html>
