@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Objednávky</title>
+</head>
+<body>
+  <h1>Objednávky</h1>
+  <ul id="orders"></ul>
+
+  <script>
+    async function load() {
+      const res = await fetch('/orders');
+      const orders = await res.json();
+      const list = document.getElementById('orders');
+      list.innerHTML = '';
+      for (const id in orders) {
+        const li = document.createElement('li');
+        li.textContent = `${id}: ${orders[id]}`;
+        list.appendChild(li);
+      }
+    }
+
+    load();
+    setInterval(load, 1000);
+  </script>
+</body>
+</html>
