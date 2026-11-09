@@ -27,6 +27,7 @@ app.post('/send-order', async (req, res) => {
       callbackUrl: 'http://localhost:3001/update'
     })
   });
+  console.log('Courier response:', response.status, await response.text());
   res.sendStatus(response.status);
 });
 
