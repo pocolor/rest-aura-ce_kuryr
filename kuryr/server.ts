@@ -7,7 +7,19 @@ app.use(express.json());
 app.post('/order', (req: Request, res: Response) => {
     const order = req.body;
     console.log('Přijata objednávka:', order);
-    res.sendStatus(202); // odpověď 202 Accepted – objednávka převzata k dalšímu zpracování
+    setTimeout(() => {
+        console.log(`${order.id}: Restaurace připravuje`);
+        setTimeout(() => {
+            console.log(`${order.id}: Prepravujeme`);
+            setTimeout(() => {
+                console.log(`${order.id}: Doruceno`);
+                res.status(202).json({
+                    id: order.id,
+                    message: "Doruceno"
+                });
+            }, 1000)
+        }, 1000)
+    }, 1000);
 });
 
 app.listen(3000, () => {
