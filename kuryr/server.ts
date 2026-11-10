@@ -1,4 +1,8 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from "express";
+import * as crypto from "crypto";
+
+const SHARED_SECRET = "noot noot";
 
 const app = express();
 app.use(express.json());
@@ -7,7 +11,12 @@ const orders: Record<string, string> = {};
 
 // Endpoint pro přijetí nové objednávky
 app.post('/order', (req: Request, res: Response) => {
+
     const order = req.body;
+    const signature = crypto.createHmac('sha256', SHARED_SECRET)
+                            .update(order, "utf8")
+                            .digest("hex");
+
     console.log('Přijata objednávka:', order);
     orders[order.id] = "Prijato";
 
@@ -21,7 +30,7 @@ app.post('/order', (req: Request, res: Response) => {
         orders[order.id] = "Pripravujeme";
         fetch(req.body.callbackUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', "X-Signature": signature },
             body: JSON.stringify({
                 id: order.id,
                 status: "Pripravujeme"
@@ -32,7 +41,7 @@ app.post('/order', (req: Request, res: Response) => {
             orders[order.id] = "Prepravujeme";
             fetch(req.body.callbackUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', "X-Signature": signature },
                 body: JSON.stringify({
                     id: order.id,
                     status: "Prepravujeme"
@@ -43,7 +52,7 @@ app.post('/order', (req: Request, res: Response) => {
                 orders[order.id] = "Doruceno";
                 fetch(req.body.callbackUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', "X-Signature": signature },
                     body: JSON.stringify({
                         id: order.id,
                         status: "Doruceno"
