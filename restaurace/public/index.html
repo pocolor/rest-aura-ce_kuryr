@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurace – objednávky</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 16px; background: #f6f6f6; }
+    h1 { color: #222; }
+    form, .order { background: white; padding: 16px; border-radius: 8px; margin-bottom: 12px; }
+    input, button { padding: 10px; font-size: 16px; }
+    button { cursor: pointer; }
+    .status { color: #176b3a; font-weight: bold; }
+    #message { min-height: 22px; }
+  </style>
+</head>
+<body>
+  <h1>Objednávky restaurace</h1>
+
+  <form id="orderForm">
+    <label for="orderId">ID objednávky (nepovinné):</label>
+    <input id="orderId" placeholder="např. obj1">
+    <button type="submit">Vytvořit objednávku</button>
+  </form>
+
+  <p id="message"></p>
+  <h2>Aktuální objednávky</h2>
+  <div id="orders">Zatím žádné objednávky.</div>
+
+  <script>
+    const form = document.getElementById('orderForm');
+    const message = document.getElementById('message');
+    const ordersElement = document.getElementById('orders');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const id = document.getElementById('orderId').value.trim();
+
+      try {
+        const response = await fetch('/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(id ? { id } : {})
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Chyba');
+
+        message.textContent = `Objednávka ${result.id} byla odeslána kurýrovi.`;
+        document.getElementById('orderId').value = '';
+        loadOrders();
+      } catch (error) {
+        message.textContent = error.message;
+      }
+    });
+
+    async function loadOrders() {
+      try {
+        const response = await fetch('/orders');
+        const orders = await response.json();
+        const entries = Object.entries(orders);
+
+        if (entries.length === 0) {
+          ordersElement.textContent = 'Zatím žádné objednávky.';
+          return;
+        }
+
+        ordersElement.replaceChildren();
+        for (const [id, status] of entries) {
+          const item = document.createElement('div');
+          item.className = 'order';
+
+          const heading = document.createElement('strong');
+          heading.textContent = id;
+          const state = document.createElement('p');
+          state.className = 'status';
+          state.textContent = status;
+
+          item.append(heading, state);
+          ordersElement.append(item);
+        }
+      } catch (error) {
+        ordersElement.textContent = 'Nepodařilo se načíst objednávky.';
+      }
+    }
+
+    loadOrders();
+    setInterval(loadOrders, 1000); // Polling každou sekundu.
+  </script>
+</body>
+</html>
