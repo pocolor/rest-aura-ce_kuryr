@@ -15,7 +15,7 @@ app.post('/order', (req: Request, res: Response) => {
 
     const order = req.body;
     const signature = crypto.createHmac('sha256', SHARED_SECRET)
-                            .update(order, "utf8")
+                            .update(JSON.stringify(order), "utf8")
                             .digest("hex");
 
     console.log('Přijata objednávka:', order);
