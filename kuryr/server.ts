@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import * as crypto from "crypto";
 
 const SHARED_SECRET = "noot noot";
+let event_counter = 1
 
 const app = express();
 app.use(express.json());
@@ -22,20 +23,28 @@ app.post('/order', (req: Request, res: Response) => {
 
     res.status(202).json({
         id: order.id,
-        status: "Objednavka prijata"
+        status: "Objednavka prijata",
+        event_id: event_counter
     });
+    event_counter++;
 
     setTimeout(() => {
         console.log(`${order.id}: Restaurace připravuje`);
         orders[order.id] = "Pripravujeme";
-        fetch(req.body.callbackUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', "X-Signature": signature },
-            body: JSON.stringify({
-                id: order.id,
-                status: "Pripravujeme"
-            })
-        });
+
+        for (let i = 0; i < 2; i++)
+        {
+            fetch(req.body.callbackUrl, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', "X-Signature": signature},
+                body: JSON.stringify({
+                    id: order.id,
+                    status: "Pripravujeme",
+                    event_id: event_counter
+                })
+            });
+        }
+        event_counter++;
         setTimeout(() => {
             console.log(`${order.id}: Prepravujeme`);
             orders[order.id] = "Prepravujeme";
@@ -44,20 +53,26 @@ app.post('/order', (req: Request, res: Response) => {
                 headers: { 'Content-Type': 'application/json', "X-Signature": signature },
                 body: JSON.stringify({
                     id: order.id,
-                    status: "Prepravujeme"
+                    status: "Prepravujeme",
+                    event_id: event_counter
                 })
             });
+            event_counter++;
             setTimeout(() => {
                 console.log(`${order.id}: Doruceno`);
                 orders[order.id] = "Doruceno";
-                fetch(req.body.callbackUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', "X-Signature": signature },
-                    body: JSON.stringify({
-                        id: order.id,
-                        status: "Doruceno"
-                    })
-                });
+                for (let i = 0; i < 2; i++) {
+                    fetch(req.body.callbackUrl, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', "X-Signature": signature},
+                        body: JSON.stringify({
+                            id: order.id,
+                            status: "Doruceno",
+                            event_id: event_counter
+                        })
+                    });
+                }
+                event_counter++;
             }, 5000)
         }, 5000)
     }, 5000);
